@@ -17,6 +17,18 @@ def calculate_angle(a, b, c):
     angle = degrees(acos(np.clip(cosine_angle, -1.0, 1.0)))
     return angle
 
+def draw_golden_spiral(img, center, scale, color, thickness, turns):
+    phi = (1 + 5 ** 0.5) / 2
+    points = []
+    for t in np.linspace(0, turns * 2 * np.pi, 300):
+        r = scale * (phi ** (t / (np.pi/2)) - 1)  # subtract 1 so r=0 at t=0
+        x = int(center[0] - r * np.sin(t))
+        y = int(center[1] + r * np.cos(t))
+        points.append((x, y))
+    for i in range(1, len(points)):
+        cv2.line(img, points[i-1], points[i], color, thickness)
+    return img
+    
 def greek_phi(image_path, output_path="output.jpg"):
     """
     Takes an image, calculates golden ratio distances & angles,
@@ -201,11 +213,18 @@ def greek_phi(image_path, output_path="output.jpg"):
     
     # Save annotated image
     cv2.imwrite(output_path, annotated_img)
+
+    # Draw golden spiral overlay (centered at nose tip, scale based on face length)
+    annotated_img = draw_golden_spiral(annotated_img, points['nose_tip'], scale=int(face_length/30), color=(0,215,255), thickness=2, turns=1.5)
+
+    # Save annotated image (now includes spiral)
+    cv2.imwrite(output_path, annotated_img)
+
     return annotated_img, ratios
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./pras.jpeg"
+    img_path = r"./nik1.jpg"
     annotated_img, ratios = greek_phi(img_path, output_path="annotated_face.jpg")
     if annotated_img is not None:
         print("\nAnnotated image saved as 'annotated_face.jpg'.")
