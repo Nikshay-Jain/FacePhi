@@ -42,21 +42,19 @@ def greek_phi(image_path, output_path="output.jpg"):
                                (int(landmarks[107].y * h) + int(landmarks[55].y *h))//2),
         'eyebrow_left_outer': ((int(landmarks[46].x * w) + int(landmarks[70].x * w))//2, 
                                (int(landmarks[46].y * h) + int(landmarks[70].y *h))//2),
-        'eyebrow_left_mid': ((int(landmarks[52].x * w) + int(landmarks[105].x * w))//2, 
-                             (int(landmarks[52].y * h) + int(landmarks[105].y *h))//2),
+        'eyebrow_left_mid': (int(landmarks[105].x * w), int(landmarks[105].y * h)),
         'eyebrow_right_inner': ((int(landmarks[285].x * w) + int(landmarks[336].x * w))//2, 
                                 (int(landmarks[285].y * h) + int(landmarks[336].y *h))//2),
         'eyebrow_right_outer': ((int(landmarks[276].x * w) + int(landmarks[300].x * w))//2,
                                 (int(landmarks[276].y * h) + int(landmarks[300].y *h))//2),
-        'eyebrow_right_mid': ((int(landmarks[282].x * w) + int(landmarks[334].x * w))//2, 
-                              (int(landmarks[282].y * h) + int(landmarks[334].y *h))//2),
+        'eyebrow_right_mid': (int(landmarks[334].x * w), int(landmarks[334].y * h)),
 
         'left_eye_outer': (int(landmarks[33].x * w), int(landmarks[33].y * h)),
         'left_eye_inner': (int(landmarks[133].x * w), int(landmarks[133].y * h)),
         'left_pupil': (int(landmarks[468].x * w), int(landmarks[468].y * h)),
         'right_eye_inner': (int(landmarks[362].x * w), int(landmarks[362].y * h)),
         'right_eye_outer': (int(landmarks[263].x * w), int(landmarks[263].y * h)),
-        'right_pupil': (int(landmarks[473].x * w), int(landmarks[173].y * h)),
+        'right_pupil': (int(landmarks[473].x * w), int(landmarks[473].y * h)),
         
         'left_cheek': (int(landmarks[234].x * w), int(landmarks[234].y * h)),
         'right_cheek': (int(landmarks[454].x * w), int(landmarks[454].y * h)),
@@ -145,9 +143,9 @@ def greek_phi(image_path, output_path="output.jpg"):
         'Upper lip / Lower lip ratio': (f"{upper_lip_height / lower_lip_height if lower_lip_height else 0:.3f}", 0.618),
         'Nose base to upper lip / Lower lip to chin': (f"{nose_upper_lip / lower_lip_chin if lower_lip_chin else 0:.3f}", 0.5),
 
-        'Jaw angle (degrees)': (f"{jaw_angle:.3f}", "125-130"),
-        'Left eyebrow angle (degrees)': (f"{eyebrow_left_angle:.3f}", "10-15"),
-        'Right eyebrow angle (degrees)': (f"{eyebrow_right_angle:.3f}", "10-15"),
+        'Jaw angle (degrees)': (f"{jaw_angle:.3f}", "120-130"),
+        'Left eyebrow angle (degrees)': (f"{eyebrow_left_angle:.3f}", 45),
+        'Right eyebrow angle (degrees)': (f"{eyebrow_right_angle:.3f}", 45),
 
         'Symmetry deviation (%)': (f"{horizontal_symmetry:.3f}", "<5%")
     }
@@ -184,23 +182,36 @@ def greek_phi(image_path, output_path="output.jpg"):
         pt1, pt2 = points[p1], points[p2]
         cv2.line(annotated_img, pt1, pt2 ,color, 1)
 
-    # Highlight jaw angle lines
-    jaw_color = (255, 0, 255)
+    # Highlight jaw angle lines and put text
+    jaw_color = (0, 0, 255)
     cv2.line(annotated_img, points['chin'], points['jaw_left'], jaw_color, 1)
     cv2.line(annotated_img, points['chin'], points['jaw_right'], jaw_color, 1)
+    # jaw_angle_text = f"Jaw Angle: {jaw_angle:.1f}"
+    # cv2.putText(annotated_img, jaw_angle_text, (points['chin'][0] + 10, points['chin'][1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
 
-    # Label jaw angle lines and put text
-    jaw_label_pos = (points['chin'][0] - 40, points['chin'][1] + 60)
-    cv2.putText(annotated_img, "Jaw Angle Lines", jaw_label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.6, jaw_color, 2)
-    jaw_angle_text = f"Jaw Angle: {jaw_angle:.1f}"
-    cv2.putText(annotated_img, jaw_angle_text, (points['chin'][0] + 10, points['chin'][1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 1)
+    # Highlight eyebrow angle lines (left)
+    eyebrow_color = (255, 0, 128)
+    cv2.line(annotated_img, points['eyebrow_left_outer'], points['eyebrow_left_mid'], eyebrow_color, 2)
+    cv2.line(annotated_img, points['eyebrow_left_inner'], points['eyebrow_left_mid'], eyebrow_color, 2)
+    # left_eyebrow_label_pos = (points['eyebrow_left_mid'][0] +10, points['eyebrow_left_mid'][1] - 40)
+    # cv2.putText(annotated_img, "Left Eyebrow Angle", left_eyebrow_label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
+    # left_eyebrow_angle_text = f"{eyebrow_left_angle:.1f}"
+    # cv2.putText(annotated_img, left_eyebrow_angle_text, (points['eyebrow_left_mid'][0] + 10, points['eyebrow_left_mid'][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
+
+    # Highlight eyebrow angle lines (right)
+    cv2.line(annotated_img, points['eyebrow_right_outer'], points['eyebrow_right_mid'], eyebrow_color, 2)
+    cv2.line(annotated_img, points['eyebrow_right_inner'], points['eyebrow_right_mid'], eyebrow_color, 2)
+    # right_eyebrow_label_pos = (points['eyebrow_right_mid'][0] + 10, points['eyebrow_right_mid'][1] - 40)
+    # cv2.putText(annotated_img, "Right Eyebrow Angle", right_eyebrow_label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
+    # right_eyebrow_angle_text = f"{eyebrow_right_angle:.1f}"
+    # cv2.putText(annotated_img, right_eyebrow_angle_text, (points['eyebrow_right_mid'][0] + 10, points['eyebrow_right_mid'][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
 
     # highlight symmetry lines
     mid_x = points['chin'][0]
     cv2.line(annotated_img, (mid_x, 0), (mid_x, h), (200,200,200), 1)
-    cv2.putText(annotated_img, "Midline", (mid_x+5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
-    sym_text = f"Symmetry dev: {horizontal_symmetry:.2f}%"
-    cv2.putText(annotated_img, sym_text, (mid_x+5, 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200,200,200), 1)
+    cv2.putText(annotated_img, "Midline Symmetry", (mid_x+5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
+    # sym_text = f"Deviation: {horizontal_symmetry:.2f}%"
+    # cv2.putText(annotated_img, sym_text, (mid_x+5, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
 
     # Save annotated image
     cv2.imwrite(output_path, annotated_img)
@@ -208,7 +219,7 @@ def greek_phi(image_path, output_path="output.jpg"):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./nik.jpg"
+    img_path = r"./pras.jpeg"
     annotated_img, ratios = greek_phi(img_path, output_path="annotated_face.jpg")
     if annotated_img is not None:
         print("\nAnnotated image saved as 'annotated_face.jpg'.")
