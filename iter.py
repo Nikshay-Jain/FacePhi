@@ -123,9 +123,7 @@ def greek_phi(image_path, output_path="output.jpg"):
     vh = (forehead_length / face_length if face_length else 0,
         face2 / face_length if face_length else 0,
         (face_length - forehead_length - face2) / face_length if face_length else 0)
-    
     vertical_harmony = f"{vh[0]/vh[1]:.3f} : {1:.3f} : {vh[2]/vh[1]:.3f}"
-    print(f"Vertical harmony ratios (Forehead:Nose:Chin): {vertical_harmony}")
 
     # Ratios
     ratios = {
@@ -180,39 +178,27 @@ def greek_phi(image_path, output_path="output.jpg"):
     ]
     for p1, p2, color, label, offset in line_specs:
         pt1, pt2 = points[p1], points[p2]
-        cv2.line(annotated_img, pt1, pt2 ,color, 1)
+        cv2.line(annotated_img, pt1, pt2 ,color, 2)
 
     # Highlight jaw angle lines and put text
     jaw_color = (0, 0, 255)
-    cv2.line(annotated_img, points['chin'], points['jaw_left'], jaw_color, 1)
-    cv2.line(annotated_img, points['chin'], points['jaw_right'], jaw_color, 1)
-    # jaw_angle_text = f"Jaw Angle: {jaw_angle:.1f}"
-    # cv2.putText(annotated_img, jaw_angle_text, (points['chin'][0] + 10, points['chin'][1] + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 255), 2)
-
+    cv2.line(annotated_img, points['chin'], points['jaw_left'], jaw_color, 2)
+    cv2.line(annotated_img, points['chin'], points['jaw_right'], jaw_color, 2)
+    
     # Highlight eyebrow angle lines (left)
     eyebrow_color = (255, 0, 128)
     cv2.line(annotated_img, points['eyebrow_left_outer'], points['eyebrow_left_mid'], eyebrow_color, 2)
     cv2.line(annotated_img, points['eyebrow_left_inner'], points['eyebrow_left_mid'], eyebrow_color, 2)
-    # left_eyebrow_label_pos = (points['eyebrow_left_mid'][0] +10, points['eyebrow_left_mid'][1] - 40)
-    # cv2.putText(annotated_img, "Left Eyebrow Angle", left_eyebrow_label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
-    # left_eyebrow_angle_text = f"{eyebrow_left_angle:.1f}"
-    # cv2.putText(annotated_img, left_eyebrow_angle_text, (points['eyebrow_left_mid'][0] + 10, points['eyebrow_left_mid'][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
-
+    
     # Highlight eyebrow angle lines (right)
     cv2.line(annotated_img, points['eyebrow_right_outer'], points['eyebrow_right_mid'], eyebrow_color, 2)
     cv2.line(annotated_img, points['eyebrow_right_inner'], points['eyebrow_right_mid'], eyebrow_color, 2)
-    # right_eyebrow_label_pos = (points['eyebrow_right_mid'][0] + 10, points['eyebrow_right_mid'][1] - 40)
-    # cv2.putText(annotated_img, "Right Eyebrow Angle", right_eyebrow_label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
-    # right_eyebrow_angle_text = f"{eyebrow_right_angle:.1f}"
-    # cv2.putText(annotated_img, right_eyebrow_angle_text, (points['eyebrow_right_mid'][0] + 10, points['eyebrow_right_mid'][1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.75, eyebrow_color, 2)
-
+    
     # highlight symmetry lines
     mid_x = points['chin'][0]
     cv2.line(annotated_img, (mid_x, 0), (mid_x, h), (200,200,200), 1)
     cv2.putText(annotated_img, "Midline Symmetry", (mid_x+5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
-    # sym_text = f"Deviation: {horizontal_symmetry:.2f}%"
-    # cv2.putText(annotated_img, sym_text, (mid_x+5, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
-
+    
     # Save annotated image
     cv2.imwrite(output_path, annotated_img)
     return annotated_img, ratios
