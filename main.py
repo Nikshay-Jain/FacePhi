@@ -238,16 +238,6 @@ def greek_phi(image_path):
         'Midline symmetry deviation (%)': (f"{symmetry_deviation:.3f}", "<5")
     }
 
-    # # Phi-related ratios for golden spiral
-    # phi_deviations = [
-    #     float(ratios['Face length / Face width'][0])-1.618,
-    #     float(ratios['Interocular dist. / Nose width'][0])-1.618,
-    #     float(ratios['Mouth width / Nose width'][0])-1.618,
-    #     float(ratios['Lower lip / Upper lip'][0])-1.618
-    # ]
-
-    # mean_ratio = 1.618-round(np.sqrt(np.mean(np.square(phi_deviations))), 3)
-
     greek_score = compute_beauty_score(ratios)
     face_ratio = float(ratios['Face length / Face width'][0])
 
@@ -257,7 +247,7 @@ def greek_phi(image_path):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./nik1.jpg"
+    img_path = r"./nik3.jpg"
     output_path="annotated_face.jpg"
     annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
 
@@ -268,11 +258,13 @@ if __name__ == "__main__":
     for key, (value, ideal) in ratios.items():
         print(f"{key:<35} {value:<15} {ideal:<15}")
 
-    print("\n----------------------------------------------")
+    print("\n-----------------------------------------")
     print(f"💫 Face Ratio (Length/Width): {face_ratio:.3f} 💫")
-    print(f"✨ Overall Golden Ratio achieved: {greek_score}%!!! ✨")
-    print("----------------------------------------------\n")
+    print(f"✨ Geometric Harmony Index: {greek_score}%!!! ✨")
+    print("-----------------------------------------\n")
 
     if annotated_img is not None:
         cv2.imwrite(output_path, annotated_img)
         print("Annotated image saved as 'annotated_face.jpg'.")
+    else:
+        print("No face detected in the image.")
