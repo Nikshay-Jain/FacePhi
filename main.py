@@ -247,7 +247,7 @@ def greek_phi(image_path):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./nik3.jpg"
+    img_path = r"./aish3.jpg"
     output_path="annotated_face.jpg"
     annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
 

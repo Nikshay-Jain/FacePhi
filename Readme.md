@@ -1,12 +1,12 @@
-# Facial Geometric Analysis Tool
+# FacePhi: Facial Geometry Analysis Tool
 
 A computational tool for analyzing facial proportions using mathematical ratios and geometric principles, with emphasis on classical proportion theories including the golden ratio (φ ≈ 1.618).
 
 ## Overview
 
-This tool extracts facial landmarks using MediaPipe Face Mesh and calculates various geometric relationships between facial features. It provides quantitative analysis of proportional relationships that have been studied in classical aesthetics and modern facial analysis research.
+This tool extracts facial landmarks using MediaPipe Face Mesh and calculates various geometric relationships between facial features. It provides quantitative analysis of proportional relationships that have been studied in classical aesthetics and modern facial analysis research. The mediapipe facial landmarks fail in case of unusually assymetric faces, thereby yielding unreliable results that are unfit for comparative analysis. The user is requested to feed in **real, natural, camera-facing** facial images only.
 
-**Important Note**: This is a mathematical analysis tool for educational and research purposes. Facial proportions are highly variable across populations and cultures, and mathematical ratios do not define beauty or attractiveness.
+**Important Note**: This is a mathematical analysis tool for fun & educational purposes. Facial proportions are highly variable across populations and cultures, and mathematical ratios do not define beauty or attractiveness.
 
 ## Technical Implementation
 
@@ -133,8 +133,7 @@ print(f"Face Ratio: {face_ratio}")
 ### Technical Limitations
 - Single face detection only
 - Requires clear, front-facing images
-- Dependent on MediaPipe landmark accuracy
-- 2D analysis of 3D structures
+- Dependent on MediaPipe landmarks, so unusually assymetric faces yield unreliable results.
 
 ### Mathematical Limitations
 - Ideal ratios are theoretical constructs, not biological constants
@@ -161,7 +160,7 @@ numpy>=1.20.0
 
 ```bash
 pip install opencv-python mediapipe numpy
-python facial_analysis.py
+python main.py
 ```
 
 ## Scientific References
