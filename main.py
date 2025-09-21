@@ -17,17 +17,14 @@ def calculate_angle(a, b, c):
     angle = degrees(acos(np.clip(cosine_angle, -1.0, 1.0)))
     return angle
 
-def draw_golden_spiral(img, center, scale, color, thickness, turns):
-    phi = (1 + 5 ** 0.5) / 2
-    points = []
-    for t in np.linspace(0, turns * 2 * np.pi, 300):
-        r = scale * (phi ** (t / (np.pi/2)) - 1)     # subtract 1 so r=0 at t=0
-        x = int(center[0] - r * np.sin(t))
-        y = int(center[1] + r * np.cos(t))
-        points.append((x, y))
-    for i in range(1, len(points)):
-        cv2.line(img, points[i-1], points[i], color, thickness)
-    return img
+def point_line_distance(pt, line_pt1, line_pt2):
+        # pt: (x, y), line_pt1: (x1, y1), line_pt2: (x2, y2)
+        x0, y0 = pt
+        x1, y1 = line_pt1
+        x2, y2 = line_pt2
+        num = abs((y2 - y1)*x0 - (x2 - x1)*y0 + x2*y1 - y2*x1)
+        den = np.sqrt((y2 - y1)**2 + (x2 - x1)**2)
+        return num / den if den != 0 else 0
 
 def compute_beauty_score(ratios):
     deviations = []
@@ -49,27 +46,19 @@ def compute_beauty_score(ratios):
     score = max(0, 100 * (1 - rms))
     return round(score, 2)
 
-def compute_percentile_score(face_ratio):
-    """
-    Calculate percentile based on Indian population studies
-    Based on research from Central Indian, Gujarati, and North Indian populations
-    """
-    if face_ratio >= 1.5:  # Near golden ratio (top performers)
-        return 99.5 + (face_ratio - 1.5) * 4
-    
-    elif face_ratio >= 1.35:  # Above Indian average
-        # 50th-80th percentile
-        return 50 + ((face_ratio - 1.35) / (1.5 - 1.35)) * 49.5
-    
-    elif face_ratio >= 1.35:  # Around Indian population mean
-        # 25th-50th percentile (based on Gujarati range 1.301-1.423)
-        return 25 + ((face_ratio - 1.35) / (1.45 - 1.35)) * 25
-    
-    else:  # Below average for Indian population
-        # Bottom 25%
-        return max(1, 25 * (face_ratio / 1.35))
-    
-def plot_on_image(annotated_img, points, output_path):
+def draw_golden_spiral(img, center, scale, color, thickness, turns):
+    phi = (1 + 5 ** 0.5) / 2
+    points = []
+    for t in np.linspace(0, turns * 2 * np.pi, 300):
+        r = scale * (phi ** (t / (np.pi/2)) - 1)     # subtract 1 so r=0 at t=0
+        x = int(center[0] - r * np.sin(t))
+        y = int(center[1] + r * np.cos(t))
+        points.append((x, y))
+    for i in range(1, len(points)):
+        cv2.line(img, points[i-1], points[i], color, thickness)
+    return img
+
+def plot_on_image(annotated_img, points):
     h, w, _ = annotated_img.shape
     # Draw all key points
     for key, (x, y) in points.items():
@@ -94,7 +83,7 @@ def plot_on_image(annotated_img, points, output_path):
         pt1, pt2 = points[p1], points[p2]
         cv2.line(annotated_img, pt1, pt2 ,color, 2)
 
-    # Highlight jaw angle lines and put text
+    # Highlight jaw angle lines
     jaw_color = (0, 0, 255)
     cv2.line(annotated_img, points['chin'], points['jaw_left'], jaw_color, 2)
     cv2.line(annotated_img, points['chin'], points['jaw_right'], jaw_color, 2)
@@ -109,22 +98,19 @@ def plot_on_image(annotated_img, points, output_path):
     cv2.line(annotated_img, points['eyebrow_right_inner'], points['eyebrow_right_mid'], eyebrow_color, 2)
     
     # highlight symmetry lines
-    mid_x = points['chin'][0]
-    cv2.line(annotated_img, (mid_x, 0), (mid_x, h), (200,200,200), 1)
-    cv2.putText(annotated_img, "Midline Symmetry", (mid_x+5, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 2)
-    
-    # Save annotated image
-    cv2.imwrite(output_path, annotated_img)
+    mid_x1 = points['chin'][0]
+    mid_x2 = points['forehead_top'][0]
+    mid_y1 = points['chin'][1]
+    mid_y2 = points['forehead_top'][1]
+    cv2.line(annotated_img, (mid_x1, mid_y1), (mid_x2, mid_y2), (200,200,200), 1)
 
     # Draw golden spiral overlay (centered at nose tip, scale based on face length)
     face_length = calculate_distance(points['forehead_top'], points['chin'])
     annotated_img = draw_golden_spiral(annotated_img, points['nose_tip'], scale=int(face_length/30), color=(0,215,255), thickness=2, turns=1.5)
 
-    # Save annotated image (now includes spiral)
-    cv2.imwrite(output_path, annotated_img)
     return annotated_img
     
-def greek_phi(image_path, output_path="output.jpg"):
+def greek_phi(image_path):
     """
     Takes an image, calculates golden ratio distances & angles,
     draws them on the image, and returns annotated image and metrics.
@@ -218,70 +204,75 @@ def greek_phi(image_path, output_path="output.jpg"):
     eyebrow_left_angle = 180-calculate_angle(points['eyebrow_left_outer'], points['eyebrow_left_mid'], points['eyebrow_left_inner'])
     eyebrow_right_angle = 180-calculate_angle(points['eyebrow_right_outer'], points['eyebrow_right_mid'], points['eyebrow_right_inner'])
 
-    # Horizontal symmetry: distances from midline (x of chin) for eyes, nose, mouth
-    mid_x = points['chin'][0]
-    horizontal_symmetry = np.mean([
-        abs(points['left_eye_inner'][0] - mid_x) - abs(points['right_eye_inner'][0] - mid_x),
-        abs(points['nose_left'][0] - mid_x) - abs(points['nose_right'][0] - mid_x),
-        abs(points['mouth_left'][0] - mid_x) - abs(points['mouth_right'][0] - mid_x)
-    ])
-    horizontal_symmetry = abs(horizontal_symmetry) / face_width * 100  # percent deviation
-    
+    # Symmetry (distance of key points from midline)
+    midline_pt1 = points['chin']
+    midline_pt2 = points['forehead_top']
+
+    symmetry_points = [
+        points['left_eye_inner'], points['right_eye_inner'],
+        points['mouth_left'], points['mouth_right']
+    ]
+
+    distances = [point_line_distance(pt, midline_pt1, midline_pt2) for pt in symmetry_points]
+    symmetry_deviation = np.std(distances) / face_width * 100  # percent deviation
+
     # Ratios
     ratios = {
         'Face length / Face width': (f"{face_length / face_width:.3f}", 1.618),
-        'Forehead length / Face length': (f"{forehead_length / face_length:.3f}", 0.333),
-        'Eyebrow to nose tip / Face length': (f"{face2 / face_length:.3f}", 0.333),
+        'Mouth width / Nose width': (f"{mouth_width / nose_width:.3f}", 1.618),
+        'Interocular dist. / Nose width': (f"{interocular_distance / nose_width:.3f}", 1.618),
+        'Lower lip / Upper lip': (f"{lower_lip_height / upper_lip_height:.3f}", 1.618),
 
         'Mouth width / Face width': (f"{mouth_width / face_width:.3f}", 0.38),
-        'Mouth width / Nose width': (f"{mouth_width / nose_width:.3f}", 1.618),
-        
-        'Interocular distance / Nose width': (f"{interocular_distance / nose_width:.3f}", 1.618),
-        
+        'Forehead length / Face length': (f"{forehead_length / face_length:.3f}", 0.333),
+        'Eyebrow to nose / Face length': (f"{face2 / face_length:.3f}", 0.333),
+
+        'Philtrum to chin': (f"{nose_upper_lip / lower_lip_chin if lower_lip_chin else 0:.3f}", 0.5),
         'Eye width / Face width': (f"{eye_width / face_width if face_width else 0:.3f}", 0.25),
         'Nose width / Face width': (f"{nose_width / face_width if face_width else 0:.3f}", 0.2),
-        
-        'Lower lip / Upper lip': (f"{lower_lip_height / upper_lip_height:.3f}", 1.618),
-        'Nose base to upper lip / Lower lip to chin': (f"{nose_upper_lip / lower_lip_chin if lower_lip_chin else 0:.3f}", 0.5),
 
         'Jaw angle (degrees)': (f"{jaw_angle:.3f}", 125),
         'Left eyebrow angle (degrees)': (f"{eyebrow_left_angle:.3f}", 45),
         'Right eyebrow angle (degrees)': (f"{eyebrow_right_angle:.3f}", 45),
 
-        'Max Symmetry deviation (%)': (f"{horizontal_symmetry:.3f}", "<5")
+        'Midline symmetry deviation (%)': (f"{symmetry_deviation:.3f}", "<5")
     }
 
-    # Phi-related ratios for golden spiral
-    phi_deviations = [
-        float(ratios['Face length / Face width'][0])-1.618,
-        float(ratios['Interocular distance / Nose width'][0])-1.618,
-        float(ratios['Mouth width / Nose width'][0])-1.618,
-        float(ratios['Lower lip / Upper lip'][0])-1.618
-    ]
+    # # Phi-related ratios for golden spiral
+    # phi_deviations = [
+    #     float(ratios['Face length / Face width'][0])-1.618,
+    #     float(ratios['Interocular dist. / Nose width'][0])-1.618,
+    #     float(ratios['Mouth width / Nose width'][0])-1.618,
+    #     float(ratios['Lower lip / Upper lip'][0])-1.618
+    # ]
+
+    # mean_ratio = 1.618-round(np.sqrt(np.mean(np.square(phi_deviations))), 3)
 
     greek_score = compute_beauty_score(ratios)
-    mean_ratio = 1.618-round(np.sqrt(np.mean(np.square(phi_deviations))), 3)
-    percentile = compute_percentile_score(mean_ratio)
+    face_ratio = float(ratios['Face length / Face width'][0])
 
     # Draw points and distances on the image
-    annotated_img = plot_on_image(img.copy(), points, output_path)
-    return annotated_img, ratios, greek_score, mean_ratio, percentile
+    annotated_img = plot_on_image(img.copy(), points)
+    return annotated_img, ratios, greek_score, face_ratio
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./sundar.jpg"
-    annotated_img, ratios, greek_score, mean_ratio, percentile = greek_phi(img_path, output_path="annotated_face.jpg")
+    img_path = r"./nik1.jpg"
+    output_path="annotated_face.jpg"
+    annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
 
     # Print ratios and angles
-    print("\n--- Facial Ratios & Angles ---")
+    print("-" * 60)
+    print(f"{'Facial Ratios & Angles':<35} {'Value':<15} {'Ideal':<15}")
+    print("-" * 60)
     for key, (value, ideal) in ratios.items():
-        print(f"{key}: {value} (ideal: {ideal})")
+        print(f"{key:<35} {value:<15} {ideal:<15}")
 
-    print("------------------------------\n")
-    print(f"🌟 Mean of Key Phi Ratios: {mean_ratio:.2f} 🌟")
+    print("\n----------------------------------------------")
+    print(f"💫 Face Ratio (Length/Width): {face_ratio:.3f} 💫")
     print(f"✨ Overall Golden Ratio achieved: {greek_score}%!!! ✨")
-    # print(f"🌟 Percentile Rank: Top {percentile:.2f}% of faces 🌟")
-    print("------------------------------\n")
+    print("----------------------------------------------\n")
 
     if annotated_img is not None:
+        cv2.imwrite(output_path, annotated_img)
         print("Annotated image saved as 'annotated_face.jpg'.")
