@@ -1,4 +1,4 @@
-import cv2
+import cv2, random
 import mediapipe as mp
 import numpy as np
 from math import degrees, acos
@@ -110,6 +110,64 @@ def plot_on_image(annotated_img, points):
 
     return annotated_img
     
+def comment_on(face_ratio):
+    """
+    Returns playful labels based on face ratio ranges
+    Based on population distribution research with finer granularity
+    """
+    
+    RATIO_LABELS = {
+        # Ultra-elongated - Very rare
+        (1.62, float('inf')): [
+            "VerticalVision", "SkylineSpecial", "TowerType", "ElongatedElegance", 
+            "VerticalVortex", "ColumnClassic", "SkyscraperStyle", "RectangleRoyalty",
+            "GoldenGiraffe", "PhiPhantom", "EliteEllipse", "RegalRectangle",
+            "MathematicalMuse", "GeometricGiant", "ClassicCanvas", "PortraitPerfect"
+        ],
+        
+        # Near golden ratio - Target zone
+        (1.32, 1.62): [
+            "GoldenGod", "PhiPerfect", "DivineDimension", "MathMagic",
+            "GeometricGenius", "HarmonyHero", "RatioRoyalty", "PerfectProportion",
+            "SymmetrySupreme", "BalanceBliss", "IdealIcon", "ClassicCrown"
+        ],
+        
+        # Balanced oval - Common ideal
+        (1.28, 1.32): [
+            "BalancedBeauty", "OvalOracle", "HarmonyHub", "GeometricGem",
+            "ProportionPro", "SymmetrySeeker", "BalanceBoost", "OvalOptimal",
+            "ClassicCombo", "NaturalNorm", "TimelessType", "ElegantEquation"
+        ],
+        
+        # Rounded oval - Common
+        (1.25, 1.28): [
+            "SoftSymmetry", "CurveClassic", "RoundedRhythm", "CircleChic",
+            "BubbleBoss", "SmoothSpecial", "CurvedCrown", "RoundedRuler",
+            "OvalOriginal", "SoftwareSpecial", "FlowingForm", "CurveCrafter"
+        ],
+        
+        # Round dominant - Less common
+        (1.2, 1.25): [
+            "CircleChamp", "RoundRoyalty", "BubbleBliss", "FullFormula",
+            "CircularCrown", "RoundedRock", "BubbleBoost", "CircleCode",
+            "SphericalStar", "RoundedRebel", "CircularChic", "BubbleBeast"
+        ],
+        
+        # Very round - Rare
+        (1.1, 1.2): [
+            "MegaBubble", "UltraRound", "CircleExtreme", "BubbleMax",
+            "RoundedRocket", "CircularCyborg", "BubbleBomb", "SphereSuperior", 
+            "BubbleUniverse", "CircleInfinity", "RoundedRealm", "BubbleDimension",
+            "CircularCosmos", "SphericalSpace", "RoundedReality", "BubbleBonus"
+        ]
+    }
+    
+    for (min_val, max_val), labels in RATIO_LABELS.items():
+        if min_val <= face_ratio < max_val:
+            return random.choice(labels)
+    
+    return "GeometricGhost"
+
 def greek_phi(image_path):
     """
     Takes an image, calculates golden ratio distances & angles,
@@ -247,9 +305,10 @@ def greek_phi(image_path):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./aish3.jpg"
+    img_path = r"./.jpg"
     output_path="annotated_face.jpg"
     annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
+    comment = comment_on(face_ratio)
 
     # Print ratios and angles
     print("-" * 60)
@@ -261,6 +320,7 @@ if __name__ == "__main__":
     print("\n-----------------------------------------")
     print(f"💫 Face Ratio (Length/Width): {face_ratio:.3f} 💫")
     print(f"✨ Geometric Harmony Index: {greek_score}%!!! ✨")
+    print(f"\n🎭 Face Type: #{comment} 🎭")
     print("-----------------------------------------\n")
 
     if annotated_img is not None:
