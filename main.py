@@ -46,68 +46,50 @@ def compute_beauty_score(ratios):
     score = max(0, 100 * (1 - rms))
     return round(score, 2)
 
-def draw_golden_spiral(img, center, scale, color, thickness, turns):
-    phi = (1 + 5 ** 0.5) / 2
-    points = []
-    for t in np.linspace(0, turns * 2 * np.pi, 300):
-        r = scale * (phi ** (t / (np.pi/2)) - 1)     # subtract 1 so r=0 at t=0
-        x = int(center[0] - r * np.sin(t))
-        y = int(center[1] + r * np.cos(t))
-        points.append((x, y))
-    for i in range(1, len(points)):
-        cv2.line(img, points[i-1], points[i], color, thickness)
-    return img
-
 def plot_on_image(annotated_img, points):
-    h, w, _ = annotated_img.shape
-    # Draw all key points
-    for key, (x, y) in points.items():
-        cv2.circle(annotated_img, (x, y), 3, (0, 0, 255), -1)
+    # Color palette
+    point_color = (255, 215, 0)
+    arrow_thickness = 2
+    point_radius = 3
+    ring_thickness = 1
+    font = cv2.FONT_HERSHEY_SIMPLEX
 
-    # Draw main lines for ratios/distances
-    line_specs = [
-        # (start, end, color, label, label_offset)
-        ('forehead_top', 'chin', (0,255,0), 'Face Length', (10, 0)),
-        ('left_cheek', 'right_cheek', (0,255,0), 'Face Width', (0, -10)),
-        ('forehead_top', 'nose_bridge', (0,128,255), 'Forehead Length', (10, 10)),
-        ('nose_left', 'nose_right', (255,128,0), 'Nose Width', (0, 20)),
-        ('nose_bridge', 'nose_tip', (128,0,255), 'Nose Length', (10, 10)),
-        ('mouth_left', 'mouth_right', (0,255,128), 'Mouth Width', (0, 20)),
-        ('upper_lip_top', 'upper_lip_bottom', (0,128,128), 'Upper Lip', (10, 10)),
-        ('lower_lip_top', 'lower_lip_bottom', (128,128,0), 'Lower Lip', (10, 10)),
-        ('left_eye_inner', 'left_eye_outer', (128,255,255), 'Left Eye Width', (10, 10)),
-        ('right_eye_inner', 'right_eye_outer', (128,255,255), 'Right Eye Width', (10, 10)),
-        ('left_pupil', 'right_pupil', (255,0,128), 'Interocular', (10, 10)),
-    ]
-    for p1, p2, color, label, offset in line_specs:
-        pt1, pt2 = points[p1], points[p2]
-        cv2.line(annotated_img, pt1, pt2 ,color, 2)
+    # Draw and label key points as rings
+    for _, (x, y) in points.items():
+        cv2.circle(annotated_img, (x, y), point_radius, point_color, ring_thickness, lineType=cv2.LINE_AA)
 
-    # Highlight jaw angle lines
-    jaw_color = (0, 0, 255)
-    cv2.line(annotated_img, points['chin'], points['jaw_left'], jaw_color, 2)
-    cv2.line(annotated_img, points['chin'], points['jaw_right'], jaw_color, 2)
+    # To draw dotted (dashed) lines
+    def draw_dotted_line(img, pt1, pt2, color, thickness=2, gap=12):
+        dist = int(np.linalg.norm(np.array(pt1) - np.array(pt2)))
+        pts = [
+            (
+                int(pt1[0] + (pt2[0] - pt1[0]) * i / dist),
+                int(pt1[1] + (pt2[1] - pt1[1]) * i / dist)
+            )
+            for i in range(0, dist, gap)
+        ]
+        for i in range(len(pts) - 1):
+            if i % 2 == 0:
+                cv2.line(img, pts[i], pts[i + 1], color, thickness, cv2.LINE_AA)
+
+    fx1, fy1 = points['forehead_top']
+    fx2, fy2 = points['chin']
+    draw_dotted_line(annotated_img, (fx1, fy1), (fx2, fy2), point_color, arrow_thickness)
+
+    cv2.putText(
+        annotated_img, "Face Length",
+        (fx1 + 10, fy1 + 40), font, 0.5, point_color, 1, cv2.LINE_AA
+    )
     
-    # Highlight eyebrow angle lines (left)
-    eyebrow_color = (255, 0, 128)
-    cv2.line(annotated_img, points['eyebrow_left_outer'], points['eyebrow_left_mid'], eyebrow_color, 2)
-    cv2.line(annotated_img, points['eyebrow_left_inner'], points['eyebrow_left_mid'], eyebrow_color, 2)
+    wx1, wy1 = points['left_cheek']
+    wx2, wy2 = points['right_cheek']
+    draw_dotted_line(annotated_img, (wx1, wy1), (wx2, wy2), point_color, arrow_thickness)
     
-    # Highlight eyebrow angle lines (right)
-    cv2.line(annotated_img, points['eyebrow_right_outer'], points['eyebrow_right_mid'], eyebrow_color, 2)
-    cv2.line(annotated_img, points['eyebrow_right_inner'], points['eyebrow_right_mid'], eyebrow_color, 2)
-    
-    # highlight symmetry lines
-    mid_x1 = points['chin'][0]
-    mid_x2 = points['forehead_top'][0]
-    mid_y1 = points['chin'][1]
-    mid_y2 = points['forehead_top'][1]
-    cv2.line(annotated_img, (mid_x1, mid_y1), (mid_x2, mid_y2), (200,200,200), 1)
-
-    # Draw golden spiral overlay (centered at nose tip, scale based on face length)
-    face_length = calculate_distance(points['forehead_top'], points['chin'])
-    annotated_img = draw_golden_spiral(annotated_img, points['nose_tip'], scale=int(face_length/30), color=(0,215,255), thickness=2, turns=1.5)
-
+    # Label for face width
+    cv2.putText(
+        annotated_img, "Face Width",
+        (wx1 + 20, wy1 + 20), font, 0.5, point_color, 1, cv2.LINE_AA
+    )
     return annotated_img
     
 def comment_on(face_ratio):
@@ -119,24 +101,25 @@ def comment_on(face_ratio):
     RATIO_LABELS = {
         # Ultra-elongated - Very rare
         (1.62, float('inf')): [
-            "VerticalVision", "SkylineSpecial", "TowerType", "ElongatedElegance", 
+            "SkylineSpecial", "ElongatedElegance", "MathematicalMuse", "PortraitPerfect",
             "VerticalVortex", "ColumnClassic", "SkyscraperStyle", "RectangleRoyalty",
-            "GoldenGiraffe", "PhiPhantom", "EliteEllipse", "RegalRectangle",
-            "MathematicalMuse", "GeometricGiant", "ClassicCanvas", "PortraitPerfect"
+            "GoldenGiraffe", "EtherealEllipse", "RegalRectangle", "GeometricGiant",
+            "TallTitan", "NobleNarrow", "StatuesqueStar", "LankyLegend",
+            "SvelteSculpture", "LoftyLuxe", "StatelyShape", "ElegantEchelon"
         ],
         
         # Near golden ratio - Target zone
         (1.32, 1.62): [
-            "GoldenGod", "PhiPerfect", "DivineDimension", "MathMagic",
-            "GeometricGenius", "HarmonyHero", "RatioRoyalty", "PerfectProportion",
-            "SymmetrySupreme", "BalanceBliss", "IdealIcon", "ClassicCrown"
+            "GreekGod", "PhiPerfect", "DivineDimension", "PhiPhantom",
+            "GeometricGenius", "RatioRoyalty", "PerfectProportion",
+            "SymmetrySupreme", "IdealIcon", "ClassicCrown", "TimelessTitan"
         ],
         
         # Balanced oval - Common ideal
         (1.28, 1.32): [
-            "BalancedBeauty", "OvalOracle", "HarmonyHub", "GeometricGem",
-            "ProportionPro", "SymmetrySeeker", "BalanceBoost", "OvalOptimal",
-            "ClassicCombo", "NaturalNorm", "TimelessType", "ElegantEquation"
+            "BalancedBeauty", "OvalOracle", "GeometricGem", "ProportionPro",
+            "SymmetrySeeker", "BalanceBoost", "OvalOptimal", "ClassicCombo", 
+            "NaturalNorm", "TimelessType", "ElegantEquation"
         ],
         
         # Rounded oval - Common
@@ -148,9 +131,9 @@ def comment_on(face_ratio):
         
         # Round dominant - Less common
         (1.2, 1.25): [
-            "CircleChamp", "RoundRoyalty", "BubbleBliss", "FullFormula",
-            "CircularCrown", "RoundedRock", "BubbleBoost", "CircleCode",
-            "SphericalStar", "RoundedRebel", "CircularChic", "BubbleBeast"
+            "CircleChamp", "RoundRoyalty", "BubbleBliss", "SphereSensation",
+            "OrbitalOriginal", "RoundReign", "CircularSage", "OrbitalOracle",
+            "BubbleBoost", "CircularChic", "BubbleBeast", "SphereSupreme"
         ],
         
         # Very round - Rare
@@ -305,7 +288,7 @@ def greek_phi(image_path):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"./nik3.jpg"
+    img_path = r"test_images\aish1.jpg"
     output_path="annotated_face.jpg"
     annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
     comment = comment_on(face_ratio)
