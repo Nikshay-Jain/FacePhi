@@ -148,19 +148,15 @@ Current research indicates:
 - Cultural differences in aesthetic preferences
 - Mathematical ratios don't predict perceived attractiveness reliably
 
-## Dependencies
-
-```
-cv2>=4.5.0
-mediapipe>=0.8.9
-numpy>=1.20.0
-```
-
 ## Installation
 
+Clone the repository and install dependencies using `requirements.txt`:
+
 ```bash
-pip install opencv-python mediapipe numpy
-python main.py
+git clone https://github.com/Nikshay-Jain/FacePhi.git
+cd FacePhi
+pip install -r requirements.txt
+streamlit run app.py
 ```
 
 ## Scientific References
