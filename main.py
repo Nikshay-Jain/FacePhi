@@ -59,7 +59,7 @@ def plot_on_image(annotated_img, points):
         cv2.circle(annotated_img, (x, y), point_radius, point_color, ring_thickness, lineType=cv2.LINE_AA)
 
     # To draw dotted (dashed) lines
-    def draw_dotted_line(img, pt1, pt2, color, thickness=2, gap=12):
+    def draw_dotted_line(img, pt1, pt2, color, thickness=2, gap=5):
         dist = int(np.linalg.norm(np.array(pt1) - np.array(pt2)))
         pts = [
             (
@@ -101,8 +101,7 @@ def comment_on(face_ratio):
     RATIO_LABELS = {
         # Ultra-elongated - Very rare
         (1.62, float('inf')): [
-            "SkylineSpecial", "ElongatedElegance", "MathematicalMuse", "PortraitPerfect",
-            "VerticalVortex", "ColumnClassic", "SkyscraperStyle", "RectangleRoyalty",
+            "VerticalVortex", "SkyscraperStyle", "RectangleRoyalty", "ElongatedElegance",
             "GoldenGiraffe", "EtherealEllipse", "RegalRectangle", "GeometricGiant",
             "TallTitan", "NobleNarrow", "StatuesqueStar", "LankyLegend",
             "SvelteSculpture", "LoftyLuxe", "StatelyShape", "ElegantEchelon"
@@ -118,15 +117,14 @@ def comment_on(face_ratio):
         # Balanced oval - Common ideal
         (1.28, 1.32): [
             "BalancedBeauty", "OvalOracle", "GeometricGem", "ProportionPro",
-            "SymmetrySeeker", "BalanceBoost", "OvalOptimal", "ClassicCombo", 
-            "NaturalNorm", "TimelessType", "ElegantEquation"
+            "OvalOptimal", "NaturalNorm", "TimelessType", "ElegantEquation"
         ],
         
         # Rounded oval - Common
         (1.25, 1.28): [
-            "SoftSymmetry", "CurveClassic", "RoundedRhythm", "CircleChic",
-            "BubbleBoss", "SmoothSpecial", "CurvedCrown", "RoundedRuler",
-            "OvalOriginal", "SoftwareSpecial", "FlowingForm", "CurveCrafter"
+            "CurveClassic", "RoundedRhythm", "CircleChic",
+            "BubbleBoss", "CurvedCrown", "RoundedRuler",
+            "OvalOriginal", "SoftwareSpecial", "FlowingForm"
         ],
         
         # Round dominant - Less common
@@ -138,10 +136,9 @@ def comment_on(face_ratio):
         
         # Very round - Rare
         (1.1, 1.2): [
-            "MegaBubble", "UltraRound", "CircleExtreme", "BubbleMax",
-            "RoundedRocket", "CircularCyborg", "BubbleBomb", "SphereSuperior", 
-            "BubbleUniverse", "CircleInfinity", "RoundedRealm", "BubbleDimension",
-            "CircularCosmos", "SphericalSpace", "RoundedReality", "BubbleBonus"
+            "MegaBubble", "UltraRound", "CircleExtreme", "RoundedRealm",
+            "CircularCyborg", "BubbleBomb", "SphereSuperior", "CircleInfinity", 
+            "CircularCosmos", "SphericalSpace", "BubbleUniverse", "RoundedReality"
         ]
     }
     
@@ -222,11 +219,16 @@ def greek_phi(image_path):
     # Distances
     face_length = calculate_distance(points['forehead_top'], points['chin'])
     face_width = calculate_distance(points['left_cheek'], points['right_cheek'])
-    forehead_length = calculate_distance(points['forehead_top'], points['nose_bridge'])
+    eyebrow_highest = (
+        (points['eyebrow_left_mid'][0] + points['eyebrow_right_mid'][0]) // 2,
+        (points['eyebrow_left_mid'][1] + points['eyebrow_right_mid'][1]) // 2
+    )
+    forehead_length = calculate_distance(points['forehead_top'], points['eyebrow_mid'])
 
     left_eye_width = calculate_distance(points['left_eye_inner'], points['left_eye_outer'])
     right_eye_width = calculate_distance(points['right_eye_inner'], points['right_eye_outer'])
-    eye_width = (left_eye_width + right_eye_width) / 2
+    eye_width = ((left_eye_width + right_eye_width) / 2)*1.1  # slight adjustment for accuracy
+    eye_dist = calculate_distance(points['left_eye_inner'], points['right_eye_inner'])
     interocular_distance = calculate_distance(points['left_pupil'], points['right_pupil'])
     
     nose_width = calculate_distance(points['nose_left'], points['nose_right'])
@@ -263,6 +265,7 @@ def greek_phi(image_path):
         'Mouth width / Nose width': (f"{mouth_width / nose_width:.3f}", 1.618),
         'Interocular dist. / Nose width': (f"{interocular_distance / nose_width:.3f}", 1.618),
         'Lower lip / Upper lip': (f"{lower_lip_height / upper_lip_height:.3f}", 1.618),
+        'Eye dist / Eye width': (f"{eye_dist / eye_width:.3f}", 1.000),
 
         'Mouth width / Face width': (f"{mouth_width / face_width:.3f}", 0.38),
         'Forehead length / Face length': (f"{forehead_length / face_length:.3f}", 0.333),
@@ -288,7 +291,7 @@ def greek_phi(image_path):
 
 # Example usage
 if __name__ == "__main__":
-    img_path = r"test_images\aish1.jpg"
+    img_path = r"test_images\nik3.jpg"
     output_path="annotated_face.jpg"
     annotated_img, ratios, greek_score, face_ratio = greek_phi(img_path)
     comment = comment_on(face_ratio)

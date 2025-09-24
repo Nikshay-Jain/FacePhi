@@ -139,8 +139,7 @@ st.markdown("""
     
     /* Hide Streamlit elements */
     .stDeployButton { display: none; }
-    footer { visibility: hidden; }
-    header { visibility: hidden; }
+    # footer { visibility: hidden; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -166,41 +165,41 @@ def main():
         ⚠️ **Remember**: This is for fun and education. Mathematical ratios don't define beauty or attractiveness.
         """)
     
-    # Image input section with improved styling
-    st.markdown("### 📸 Upload Your Photo")
+    # Side-by-side: Instructions image | Upload options
+    col_img, col_opts = st.columns([1.2, 1])
     
-    # Instructions with better theming
-    st.markdown("""
-    <div class="info-box">
-        <strong>📌 For best results:</strong><br>
-        • Face the camera directly<br>
-        • Single face in a frame<br>
-        • Ensure good lighting<br>
-        • Natural expression, no filters needed 😜
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Image upload options
-    upload_option = st.radio(
-        "Choose image source:",
-        ["📁 Gallery", "📷 Camera"],
-        horizontal=True,
-        key="upload_option"
-    )
-    
-    uploaded_image = None
-    
-    if upload_option == "📁 Gallery":
-        uploaded_image = st.file_uploader(
-            "Choose an image...", 
-            type=['jpg', 'jpeg', 'png'],
-            help="Select a clear, front-facing photo",
-            key="file_uploader"
+    with col_img:
+        st.markdown(
+            """
+            <div style="display: flex; justify-content: center;max-width: 350px; margin: auto;">
+                <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instructions.png"
+                     alt="Upload Instructions"
+                     style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);">
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-    elif upload_option == "📷 Camera":
-        uploaded_image = st.camera_input("Take a photo", key="camera_input")
     
-    st.markdown('</div>', unsafe_allow_html=True)
+        with col_opts:
+            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
+            upload_option = st.radio(
+                "Choose image source:",
+                ["📁 Gallery", "📷 Camera"],
+                horizontal=True,
+                key="upload_option"
+            )
+        
+            uploaded_image = None
+            if upload_option == "📁 Gallery":
+                uploaded_image = st.file_uploader(
+                    "Choose an image...",
+                    type=['jpg', 'jpeg', 'png'],
+                    help="Select a clear, front-facing photo",
+                    key="file_uploader"
+                )
+            elif upload_option == "📷 Camera":
+                uploaded_image = st.camera_input("Take a photo", key="camera_input")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     # Process image when uploaded
     if uploaded_image is not None:
@@ -286,7 +285,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         st.image(annotated_rgb, caption="Geometric Analysis", use_container_width=True)
     
     # Detailed ratios in expandable section
-    with st.expander("📏 Detailed Measurements", expanded=False):
+    with st.expander("📏 Detailed Measurements", expanded=True):
         # Create a clean table of results
         ratio_data = []
         for key, (value, ideal) in ratios.items():
@@ -302,9 +301,9 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
     # Interpretation section
     with st.expander("🤔 What does this mean?", expanded=False):
         st.markdown(f"""
-        **A fun tag for you to flex: #{face_type}**
+        **Hey #{face_type}**,
         
-        Your facial proportions of {face_ratio} show unique geometric relationships based on:
+        Your facial proportions of **{face_ratio}** show unique geometric relationships based on your skeletal structure & features. The score of **{greek_score:.1f}%** indicates how closely your facial ratios align with classical mathematical proportions, including:
         
         - **Golden ratio adherence** (φ ≈ 1.618)
         - **Classical proportional relationships**  
@@ -344,7 +343,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(share_text_whatsapp)}"
         st.markdown(f"""
         <a href="{whatsapp_url}" target="_blank" class="social-button whatsapp-btn">
-            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="24" height="24" style="vertical-align:middle;">
+            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="40" height="40" style="vertical-align:middle;">
             <span style="vertical-align:middle;">Share on WhatsApp</span>
         </a>
         """, unsafe_allow_html=True)
@@ -367,13 +366,13 @@ def sidebar_info():
         st.markdown("### ℹ️ About FacePhi")
         st.markdown("""
         **Technical Details:**
-        - MediaPipe Face Mesh (468 landmarks)
-        - 14 different facial ratio analyses
+        - 468 facial landmarks
+        - 14 facial ratio & angles
         - Classical proportion theories
         - RMS scoring methodology
         
         **Limitations:**
-        - Requires clear, front-facing photos
+        - Clear, front-facing faces only
         - Single face detection only
         - 2D analysis of 3D structures
         """)
