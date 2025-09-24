@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS for mobile-friendly design with dark/light theme support
+# Enhanced mobile-friendly CSS
 st.markdown("""
 <style>
     :root {
@@ -25,6 +25,10 @@ st.markdown("""
         --instagram-color: #E4405F;
         --whatsapp-color: #25D366;
     }
+    
+    /* Hide Streamlit elements */
+    .stDeployButton { display: none; }
+    #MainMenu { visibility: hidden; }
     
     .main-header {
         text-align: center;
@@ -83,7 +87,7 @@ st.markdown("""
         align-items: center;
         justify-content: center;
         width: 100%;
-        height: 56px;
+        min-height: 56px;
         padding: 0.75rem;
         border-radius: 16px;
         color: white;
@@ -91,13 +95,14 @@ st.markdown("""
         font-weight: 600;
         text-align: center;
         transition: transform 0.2s, background 0.2s, color 0.2s;
-        margin: 0.25rem 0;
+        margin: 0.5rem 0;
         background: transparent !important;
         border: 2.5px solid;
         box-shadow: none;
         box-sizing: border-box;
         gap: 10px;
     }
+    
     .instagram-btn {
         border-color: #e6683c;
         color: #e6683c !important;
@@ -106,6 +111,7 @@ st.markdown("""
         background: #e6683c22 !important;
         color: #e6683c !important;
         text-decoration: none;
+        transform: translateY(-2px);
     }
     .whatsapp-btn {
         border-color: #25D366;
@@ -115,7 +121,9 @@ st.markdown("""
         background: #25D36622 !important;
         color: #25D366 !important;
         text-decoration: none;
+        transform: translateY(-2px);
     }
+    
     .stButton>button, .stButton>button:focus {
         background: transparent !important;
         border: 2.5px solid #667eea !important;
@@ -124,22 +132,127 @@ st.markdown("""
         border-radius: 10px !important;
         box-shadow: none !important;
         transition: background 0.2s, color 0.2s;
+        min-height: 48px;
+        width: 100%;
     }
     .stButton>button:hover {
         background: #667eea22 !important;
         color: #667eea !important;
+        transform: translateY(-1px);
     }
     
-    /* Mobile responsive adjustments */
+    /* Mobile-specific optimizations */
     @media (max-width: 768px) {
-        .main-header h1 { font-size: 1.8rem; }
-        .result-card { padding: 1.5rem; }
-        .info-box { padding: 1rem; }
+        .main-header h1 { 
+            font-size: 1.8rem; 
+            line-height: 1.2;
+        }
+        .main-header p { 
+            font-size: 1rem; 
+            margin-top: 0.5rem;
+        }
+        .result-card { 
+            padding: 1.5rem; 
+            margin: 1rem 0;
+        }
+        .info-box { 
+            padding: 1rem; 
+            margin: 0.75rem 0;
+        }
+        
+        /* Improve touch targets */
+        .stButton>button {
+            min-height: 52px;
+            font-size: 1rem;
+        }
+        
+        .social-button {
+            min-height: 60px;
+            font-size: 1rem;
+            padding: 1rem;
+        }
+        
+        /* Better spacing for mobile */
+        .stRadio > div {
+            gap: 1rem;
+        }
+        
+        /* Improve file uploader on mobile */
+        .stFileUploader > div {
+            padding: 1rem;
+        }
+        
+        /* Better camera input styling */
+        .stCameraInput > div {
+            border-radius: 12px;
+        }
     }
     
-    /* Hide Streamlit elements */
-    .stDeployButton { display: none; }
-    # footer { visibility: hidden; }
+    /* Portrait orientation specific */
+    @media (orientation: portrait) and (max-width: 768px) {
+        .main-header {
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Stack layout improvements */
+        .upload-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .instructions-image {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            display: block;
+        }
+    }
+    
+    /* Landscape orientation on mobile */
+    @media (orientation: landscape) and (max-height: 600px) {
+        .main-header {
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .main-header h1 {
+            font-size: 1.5rem;
+        }
+        .result-card {
+            padding: 1.25rem;
+        }
+    }
+    
+    /* Ultra-small screens */
+    @media (max-width: 480px) {
+        .main-header h1 {
+            font-size: 1.6rem;
+        }
+        .result-card h2 {
+            font-size: 1.5rem;
+        }
+        .social-button {
+            font-size: 0.9rem;
+        }
+    }
+    
+    /* Improve readability */
+    p, div, span {
+        line-height: 1.5;
+    }
+    
+    /* Better dataframe display on mobile */
+    .stDataFrame {
+        font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+        .stDataFrame {
+            font-size: 0.8rem;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -147,7 +260,7 @@ def main():
     # Header with improved design
     st.markdown("""
     <div class="main-header">
-        <h1>🎭 FacePhi Analysis</h1>
+        <h1>🎭 FacePhi vs Face-Phi Analysis</h1>
         <p style="font-size: 1.1rem; margin: 0;">Discover your facial geometry through mathematical ratios</p>
     </div>
     """, unsafe_allow_html=True)
@@ -165,41 +278,45 @@ def main():
         ⚠️ **Remember**: This is for fun and education. Mathematical ratios don't define beauty or attractiveness.
         """)
     
-    # Side-by-side: Instructions image | Upload options
-    col_img, col_opts = st.columns([1.2, 1])
+    # Mobile-optimized layout
+    # Check if mobile by using a responsive approach
+    st.markdown('<div class="upload-section">', unsafe_allow_html=True)
     
-    with col_img:
-        st.markdown(
-            """
-            <div style="display: flex; justify-content: center;max-width: 350px; margin: auto;">
-                <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instructions.png"
-                     alt="Upload Instructions"
-                     style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);">
-            </div>
-            """,
-            unsafe_allow_html=True
+    # Instructions image - now responsive
+    st.markdown(
+        """
+        <div style="display: flex; justify-content: center; margin-bottom: 1.5rem;">
+            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instructions.png"
+                 alt="Upload Instructions"
+                 class="instructions-image"
+                 style="max-width: 350px; width: 100%; height: auto; border-radius: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.07);">
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    # Upload options - now full width on mobile
+    st.markdown("#### Choose image source:")
+    upload_option = st.radio(
+        "Choose image source:",
+        ["📁 Gallery", "📷 Camera"],
+        horizontal=True,
+        key="upload_option",
+        label_visibility="collapsed"
+    )
+    
+    uploaded_image = None
+    if upload_option == "📁 Gallery":
+        uploaded_image = st.file_uploader(
+            "Choose an image...",
+            type=['jpg', 'jpeg', 'png'],
+            help="Select a clear, front-facing photo",
+            key="file_uploader"
         )
+    elif upload_option == "📷 Camera":
+        uploaded_image = st.camera_input("Take a photo", key="camera_input")
     
-        with col_opts:
-            st.markdown("<div style='height: 12px;'></div>", unsafe_allow_html=True)
-            upload_option = st.radio(
-                "Choose image source:",
-                ["📁 Gallery", "📷 Camera"],
-                horizontal=True,
-                key="upload_option"
-            )
-        
-            uploaded_image = None
-            if upload_option == "📁 Gallery":
-                uploaded_image = st.file_uploader(
-                    "Choose an image...",
-                    type=['jpg', 'jpeg', 'png'],
-                    help="Select a clear, front-facing photo",
-                    key="file_uploader"
-                )
-            elif upload_option == "📷 Camera":
-                uploaded_image = st.camera_input("Take a photo", key="camera_input")
-        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
     
     # Process image when uploaded
     if uploaded_image is not None:
@@ -271,9 +388,10 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
     </div>
     """, unsafe_allow_html=True)
     
-    # Show side-by-side comparison
+    # Show side-by-side comparison - mobile responsive
     st.markdown("### 📊 Analysis Results")
     
+    # Use responsive columns that stack on mobile
     col1, col2 = st.columns(2)
     
     with col1:
@@ -285,7 +403,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         st.image(annotated_rgb, caption="Geometric Analysis", use_container_width=True)
     
     # Detailed ratios in expandable section
-    with st.expander("📏 Detailed Measurements", expanded=True):
+    with st.expander("🔍 Detailed Measurements", expanded=True):
         # Create a clean table of results
         ratio_data = []
         for key, (value, ideal) in ratios.items():
@@ -313,40 +431,39 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         **Important**: These are mathematical curiosities, not beauty standards. Facial proportions vary greatly across populations and cultures.
         """)
     
-    # Enhanced share results section
+    # Enhanced share results section - mobile optimized
     st.markdown("### 🎉 Share Your Results")
     
-    col1, col2 = st.columns(2)
+    # Share buttons - full width on mobile
+    share_text_insta = (
+        "🌟 I just got my #FacePhi analysis! "
+        f"My face scored {greek_score:.1f}% geometric harmony ({face_type})! "
+        "Discover your own facial geometry and see how you match the golden ratio. "
+        "Try it now 👉 https://facephi.streamlit.app"
+    )
+    instagram_url = "https://www.instagram.com/"
     
-    with col1:
-        share_text_insta = (
-            "🌟 I just got my #FacePhi analysis! "
-            f"My face scored {greek_score:.1f}% geometric harmony ({face_type})! "
-            "Discover your own facial geometry and see how you match the golden ratio. "
-            "Try it now 👉 https://facephi.streamlit.app"
-        )
-        instagram_url = "https://www.instagram.com/"
-        st.markdown(f"""
-        <a href="{instagram_url}" target="_blank" class="social-button instagram-btn">
-            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instagram.png" width="24" height="24" style="vertical-align:middle;">
-            <span style="vertical-align:middle;">Share on Instagram</span>
-        </a>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <a href="{instagram_url}" target="_blank" class="social-button instagram-btn">
+        <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instagram.png" width="24" height="24" style="vertical-align:middle;">
+        <span style="vertical-align:middle;">Share on Instagram</span>
+    </a>
+    """, unsafe_allow_html=True)
     
-    with col2:
-        share_text_whatsapp = (
-            f"*#{face_type}*\nJust tried *FacePhi* and scored "
-            f"*{greek_score:.1f}%* geometric harmony!\n"
-            "See how your face matches the golden ratio – it's fun and free!\n"
-            "Try it now: https://facephi.streamlit.app"
-        )
-        whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(share_text_whatsapp)}"
-        st.markdown(f"""
-        <a href="{whatsapp_url}" target="_blank" class="social-button whatsapp-btn">
-            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="40" height="40" style="vertical-align:middle;">
-            <span style="vertical-align:middle;">Share on WhatsApp</span>
-        </a>
-        """, unsafe_allow_html=True)
+    share_text_whatsapp = (
+        f"*#{face_type}*\nJust tried *FacePhi* and scored "
+        f"*{greek_score:.1f}%* geometric harmony!\n"
+        "See how your face matches the golden ratio — it's fun and free!\n"
+        "Try it now: https://facephi.streamlit.app"
+    )
+    whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(share_text_whatsapp)}"
+    
+    st.markdown(f"""
+    <a href="{whatsapp_url}" target="_blank" class="social-button whatsapp-btn">
+        <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="24" height="24" style="vertical-align:middle;">
+        <span style="vertical-align:middle;">Share on WhatsApp</span>
+    </a>
+    """, unsafe_allow_html=True)
     
     # Try again button
     if st.button("🔄 Analyze Another Photo", use_container_width=True, type="secondary"):
@@ -367,7 +484,7 @@ def sidebar_info():
         st.markdown("""
         **Technical Details:**
         - 468 facial landmarks
-        - 14 facial ratio & angles
+        - 15 facial ratio & angles
         - Classical proportion theories
         - RMS scoring methodology
         
