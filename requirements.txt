@@ -1,7 +1,7 @@
-opencv-python
-mediapipe
-streamlit
-numpy
-pandas
-Pillow
-urllib3
+opencv-python=4.12.0.88
+mediapipe=0.10.14
+streamlit=1.50.0
+numpy=2.2.6
+pandas=2.3.2
+Pillow=11.3.0
+urllib3=2.5.0

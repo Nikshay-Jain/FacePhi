@@ -115,12 +115,12 @@ st.markdown("""
     }
     
     .twitter-btn {
-        border-color: #000000;
-        color: #000000 !important;
+        border-color: #1DA1F2;
+        color: #1DA1F2 !important;
     }
     .twitter-btn:hover {
-        background: #00000022 !important;
-        color: #000000 !important;
+        background: #1DA1F222 !important;
+        color: #1DA1F2 !important;
         text-decoration: none;
         transform: translateY(-2px);
     }
