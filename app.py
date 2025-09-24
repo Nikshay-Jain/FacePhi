@@ -513,7 +513,7 @@ def footer():
     ---
     <div style="text-align: center; color: var(--text-color); font-size: 0.9rem; padding: 1rem 0;">
         Made with ❤️ for geometric exploration<br>
-        <a href="https://nikshayjain.super.site/" style="color: var(--primary-color); text-decoration: none;">About </a> | 
+        <a href="https://nikshayjain.super.site/" style="color: var(--primary-color); text-decoration: none;">Connect </a> | 
         <a href="https://www.linkedin.com/in/nikshay-jain/" style="color: var(--primary-color); text-decoration: none;"> LinkedIn</a>
     </div>
     """, unsafe_allow_html=True)
