@@ -103,16 +103,6 @@ st.markdown("""
         gap: 10px;
     }
     
-    .instagram-btn {
-        border-color: #e6683c;
-        color: #e6683c !important;
-    }
-    .instagram-btn:hover {
-        background: #e6683c22 !important;
-        color: #e6683c !important;
-        text-decoration: none;
-        transform: translateY(-2px);
-    }
     .whatsapp-btn {
         border-color: #25D366;
         color: #25D366 !important;
@@ -120,6 +110,17 @@ st.markdown("""
     .whatsapp-btn:hover {
         background: #25D36622 !important;
         color: #25D366 !important;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    
+    .twitter-btn {
+        border-color: #000000;
+        color: #000000 !important;
+    }
+    .twitter-btn:hover {
+        background: #00000022 !important;
+        color: #000000 !important;
         text-decoration: none;
         transform: translateY(-2px);
     }
@@ -260,7 +261,7 @@ def main():
     # Header with improved design
     st.markdown("""
     <div class="main-header">
-        <h1>🎭 FacePhi vs Face-Phi Analysis</h1>
+        <h1>🎭 FacePhi</h1>
         <p style="font-size: 1.1rem; margin: 0;">Discover your facial geometry through mathematical ratios</p>
     </div>
     """, unsafe_allow_html=True)
@@ -268,14 +269,16 @@ def main():
     # Quick info section
     with st.expander("📋 How it works", expanded=False):
         st.markdown("""
-        **FacePhi** analyzes facial proportions using mathematical relationships including the golden ratio (φ ≈ 1.618).
+        **FacePhi** analyzes facial proportions & compares them with the golden ratio (φ ≈ 1.618).
         
         ✨ **Features:**
-        - Uses 468 facial landmarks for precise measurements
-        - Calculates geometric ratios and symmetry  
-        - Provides playful categorization based on proportions
+        - Uses 468 facial landmarks for precise measurements.
+        - Calculates geometric ratios, angles & symmetry.
+        - Provides playful categorization based on proportions.
         
-        ⚠️ **Remember**: This is for fun and education. Mathematical ratios don't define beauty or attractiveness.
+        ⚠️ **Disclaimer**: 
+                    
+        This tool is purely for fun & education. Mathematical ratios do not define beauty or attractiveness.
         """)
     
     # Mobile-optimized layout
@@ -379,6 +382,9 @@ def show_error_message(error_msg):
 def display_results(original_image, annotated_img, ratios, greek_score, face_ratio, face_type):
     """Display analysis results in an engaging format"""
     
+    # Show side-by-side comparison - mobile responsive
+    st.markdown("### 📊 Analysis Results")
+    
     # Main results card with animation
     st.markdown(f"""
     <div class="result-card">
@@ -387,10 +393,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         <p style="font-size: 1.1rem; margin: 0;">Face Ratio: {face_ratio:.3f}</p>
     </div>
     """, unsafe_allow_html=True)
-    
-    # Show side-by-side comparison - mobile responsive
-    st.markdown("### 📊 Analysis Results")
-    
+
     # Use responsive columns that stack on mobile
     col1, col2 = st.columns(2)
     
@@ -401,7 +404,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
         # Convert CV2 image back to RGB for display
         annotated_rgb = cv2.cvtColor(annotated_img, cv2.COLOR_BGR2RGB)
         st.image(annotated_rgb, caption="Geometric Analysis", use_container_width=True)
-    
+
     # Detailed ratios in expandable section
     with st.expander("🔍 Detailed Measurements", expanded=True):
         # Create a clean table of results
@@ -414,7 +417,7 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
             })
         
         df = pd.DataFrame(ratio_data)
-        st.dataframe(df, use_container_width=True)
+        st.dataframe(df, use_container_width=True, hide_index=True)
     
     # Interpretation section
     with st.expander("🤔 What does this mean?", expanded=False):
@@ -434,38 +437,43 @@ def display_results(original_image, annotated_img, ratios, greek_score, face_rat
     # Enhanced share results section - mobile optimized
     st.markdown("### 🎉 Share Your Results")
     
-    # Share buttons - full width on mobile
-    share_text_insta = (
-        "🌟 I just got my #FacePhi analysis! "
-        f"My face scored {greek_score:.1f}% geometric harmony ({face_type})! "
-        "Discover your own facial geometry and see how you match the golden ratio. "
-        "Try it now 👉 https://facephi.streamlit.app"
-    )
-    instagram_url = "https://www.instagram.com/"
+    # Create shareable content
+    share_url = "https://facephi.streamlit.app"
     
-    st.markdown(f"""
-    <a href="{instagram_url}" target="_blank" class="social-button instagram-btn">
-        <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/instagram.png" width="24" height="24" style="vertical-align:middle;">
-        <span style="vertical-align:middle;">Share on Instagram</span>
-    </a>
-    """, unsafe_allow_html=True)
+    # WhatsApp sharing options
+    col1, col2 = st.columns(2)
     
-    share_text_whatsapp = (
-        f"*#{face_type}*\nJust tried *FacePhi* and scored "
-        f"*{greek_score:.1f}%* geometric harmony!\n"
-        "See how your face matches the golden ratio — it's fun and free!\n"
-        "Try it now: https://facephi.streamlit.app"
-    )
-    whatsapp_url = f"https://wa.me/?text={urllib.parse.quote(share_text_whatsapp)}"
+    with col1:
+        # WhatsApp Message
+        share_text_whatsapp = (
+            f"*#{face_type}*\n\n"
+            f"Just tried *FacePhi* and scored *{greek_score:.1f}%* geometric harmony!\n\n"
+            "See how much of your face matches the golden ratio — it's fun and free!\n"
+            f"Try it now: {share_url}"
+        )
+        whatsapp_msg_url = f"https://wa.me/?text={urllib.parse.quote(share_text_whatsapp)}"
+        
+        st.markdown(f"""
+        <a href="{whatsapp_msg_url}" target="_blank" class="social-button whatsapp-btn">
+            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="24" height="24" style="vertical-align:middle;">
+            <span style="vertical-align:middle;">Share over WhatsApp</span>
+        </a>
+        """, unsafe_allow_html=True)
     
-    st.markdown(f"""
-    <a href="{whatsapp_url}" target="_blank" class="social-button whatsapp-btn">
-        <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/whatsapp.png" width="24" height="24" style="vertical-align:middle;">
-        <span style="vertical-align:middle;">Share on WhatsApp</span>
-    </a>
-    """, unsafe_allow_html=True)
-    
+    with col2:
+        # Twitter/X - Great for viral content
+        tweet_text = f"Just discovered my face is #{face_type} with {greek_score:.1f}% geometric harmony! \nTry FacePhi to see how your face matches the golden ratio: {share_url} #FacePhi #GoldenRatio #FaceAnalysis"
+        twitter_url = f"https://twitter.com/intent/tweet?text={urllib.parse.quote(tweet_text)}"
+        
+        st.markdown(f"""
+        <a href="{twitter_url}" target="_blank" class="social-button twitter-btn">
+            <img src="https://raw.githubusercontent.com/Nikshay-Jain/FacePhi/main/assets/X.png" width="24" height="24" style="vertical-align:middle;">
+            <span style="vertical-align:middle;">Share over X</span>
+        </a>
+        """, unsafe_allow_html=True)
+
     # Try again button
+    st.markdown("---")
     if st.button("🔄 Analyze Another Photo", use_container_width=True, type="secondary"):
         st.rerun()
     
@@ -485,13 +493,11 @@ def sidebar_info():
         **Technical Details:**
         - 468 facial landmarks
         - 15 facial ratio & angles
-        - Classical proportion theories
         - RMS scoring methodology
         
         **Limitations:**
-        - Clear, front-facing faces only
+        - Clear & front-facing faces
         - Single face detection only
-        - 2D analysis of 3D structures
         """)
         
         st.markdown("### 📚 References")
