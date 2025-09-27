@@ -1,12 +1,9 @@
 import streamlit as st
-import cv2
-import numpy as np
+import cv2, os, tempfile, urllib.parse
 from PIL import Image
-import tempfile
-import os
+import numpy as np
 import pandas as pd
 from main import greek_phi, comment_on
-import urllib.parse
 
 # Page configuration for mobile optimization
 st.set_page_config(
